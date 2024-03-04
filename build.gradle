@@ -28,7 +28,7 @@ runs {
     }
 
     client {
-        args '--username', 'DevSniffity'
+        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
     }
 
     server {
