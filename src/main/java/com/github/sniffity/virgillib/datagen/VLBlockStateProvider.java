@@ -16,6 +16,6 @@ public class VLBlockStateProvider extends BlockStateProvider {
     protected void registerStatesAndModels() {
         this.simpleBlockWithItem(
                 VLBlocks.GRID_BLOCK.get(),
-                models().cubeAll(VLBlocks.GRID_BLOCK.toString(), modLoc("block/"+ VLBlocks.GRID_BLOCK)));
+                models().cubeAll(VLBlocks.GRID_BLOCK.getId().getPath(), modLoc("block/"+VLBlocks.GRID_BLOCK.getId().getPath())));
     }
 }

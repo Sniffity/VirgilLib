@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "virgillib:block/grid_block"
+    }
+  }
+}
