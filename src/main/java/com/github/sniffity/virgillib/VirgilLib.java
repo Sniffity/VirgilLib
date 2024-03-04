@@ -1,4 +1,4 @@
-package com.example.examplemod;
+package com.github.sniffity.virgillib;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
@@ -32,11 +32,11 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
-@Mod(ExampleMod.MODID)
-public class ExampleMod
+@Mod(VirgilLib.MODID)
+public class VirgilLib
 {
     // Define mod id in a common place for everything to reference
-    public static final String MODID = "examplemod";
+    public static final String MODID = "virgillib";
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
     // Create a Deferred Register to hold Blocks which will all be registered under the "examplemod" namespace
@@ -66,7 +66,7 @@ public class ExampleMod
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
-    public ExampleMod(IEventBus modEventBus)
+    public VirgilLib(IEventBus modEventBus)
     {
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
