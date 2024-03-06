@@ -1,4 +1,4 @@
-package com.github.sniffity.virgillib.navigation.pathfinder;
+package com.github.sniffity.virgillib.navigation.pathfinder.node;
 
 import net.minecraft.world.level.pathfinder.Node;
 

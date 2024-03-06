@@ -1,6 +1,10 @@
 package com.github.sniffity.virgillib.navigation.pathfinder;
 
 import com.github.sniffity.virgillib.navigation.VLPathNavigationRegion;
+import com.github.sniffity.virgillib.navigation.pathfinder.node.VLBinaryHeap;
+import com.github.sniffity.virgillib.navigation.pathfinder.node.VLNode;
+import com.github.sniffity.virgillib.navigation.pathfinder.node.evaluator.VLNodeEvaluator;
+import com.github.sniffity.virgillib.navigation.pathfinder.node.VLTarget;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -46,21 +50,25 @@ public class VLPathFinder {
         //operation begins by clearing the Node BinaryHeap. When findPath is called, all previous Nodes are erased
         this.openSet.clear();
         //Now, we will begin filling the Node BinaryHeap, using the Node Evaluator...
-        //ToDo: WE ARE HERE
-        //ToDo: WE ARE HERE
-        //ToDo: WE ARE HERE
-
+        //We begin by clearing everything in the node evaluator, and defining the entity's parameters
         this.nodeEvaluator.prepare(pRegion, pMob);
+        //We then get the start node...
         VLNode node = this.nodeEvaluator.getStart();
         if (node == null) {
             return null;
         } else {
-            Map<VLTarget, BlockPos> map = pTargetPositions.stream()
-                    .collect(
-                            Collectors.toMap(
-                                    p_77448_ -> this.nodeEvaluator.getGoal((double)p_77448_.getX(), (double)p_77448_.getY(), (double)p_77448_.getZ()), Function.identity()
-                            )
-                    );
+            //Target BlockPos is now a Target
+            Map<VLTarget, BlockPos> map = pTargetPositions.stream().collect(
+                    Collectors.toMap(
+                            p_77448_ -> this.nodeEvaluator
+                                    .getGoal(
+                                    (double)p_77448_.getX(),
+                                    (double)p_77448_.getY(),
+                                    (double)p_77448_.getZ()),
+                            Function.identity()
+                    )
+            );
+            //Find Path is called with a target block position, a starter node, a target node, max rnange, accuracy and search depth multiplier
             VLPath path = this.findPath(pRegion.getProfiler(), node, map, pMaxRange, pAccuracy, pSearchDepthMultiplier);
             this.nodeEvaluator.done();
             return path;
@@ -72,10 +80,22 @@ public class VLPathFinder {
         pProfiler.push("find_path");
         pProfiler.markForCharting(MetricCategory.PATH_FINDING);
         Set<VLTarget> set = pTargetPos.keySet();
+        /**
+         * The total cost of all path points up to this one. Corresponds to the A* g-score.
+         */
+        //Starter node g = 0.0f;
         pNode.g = 0.0F;
+        /**
+         * The estimated cost from this path point to the target. Corresponds to the A* h-score.
+         */
+
         pNode.h = this.getBestH(pNode, set);
+        /**
+         * The total cost of the path containing this path point. Used as sort criteria in PathHeap. Corresponds to the A* f-score.
+         */
         pNode.f = pNode.h;
         this.openSet.clear();
+        //Insert starter node...
         this.openSet.insert(pNode);
         Set<Node> set1 = ImmutableSet.of();
         int i = 0;
@@ -124,11 +144,12 @@ public class VLPathFinder {
             }
         }
 
-        Optional<VLPath> optional = !set2.isEmpty()
-                ? set2.stream()
+        Optional<VLPath> optional = !set2.isEmpty() ?
+                set2.stream()
                 .map(p_77454_ -> this.reconstructPath(p_77454_.getBestNode(), pTargetPos.get(p_77454_), true))
                 .min(Comparator.comparingInt(VLPath::getNodeCount))
-                : set.stream()
+                :
+                set.stream()
                 .map(p_77451_ -> this.reconstructPath(p_77451_.getBestNode(), pTargetPos.get(p_77451_), false))
                 .min(Comparator.comparingDouble(VLPath::getDistToTarget).thenComparingInt(VLPath::getNodeCount));
         pProfiler.pop();

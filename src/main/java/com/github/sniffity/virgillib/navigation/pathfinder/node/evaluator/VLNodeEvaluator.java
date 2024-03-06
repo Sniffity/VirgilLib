@@ -1,6 +1,8 @@
-package com.github.sniffity.virgillib.navigation.pathfinder;
+package com.github.sniffity.virgillib.navigation.pathfinder.node.evaluator;
 
 import com.github.sniffity.virgillib.navigation.VLPathNavigationRegion;
+import com.github.sniffity.virgillib.navigation.pathfinder.node.VLNode;
+import com.github.sniffity.virgillib.navigation.pathfinder.node.VLTarget;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
@@ -8,7 +10,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
-import net.minecraft.world.level.pathfinder.Node;
 
 public abstract class VLNodeEvaluator {
     protected VLPathNavigationRegion level;
@@ -47,7 +48,7 @@ public abstract class VLNodeEvaluator {
      * Returns a mapped point or creates and adds one
      */
     protected VLNode getNode(int pX, int pY, int pZ) {
-        return this.nodes.computeIfAbsent(Node.createHash(pX, pY, pZ), p_77332_ -> new VLNode(pX, pY, pZ));
+        return this.nodes.computeIfAbsent(VLNode.createHash(pX, pY, pZ), p_77332_ -> new VLNode(pX, pY, pZ));
     }
 
     public abstract VLNode getStart();

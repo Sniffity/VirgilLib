@@ -1,4 +1,4 @@
-package com.github.sniffity.virgillib.navigation.pathfinder;
+package com.github.sniffity.virgillib.navigation.pathfinder.node;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -48,7 +48,7 @@ public class VLNode {
         this.hash = createHash(pX, pY, pZ);
     }
 
-
+    //Creates a hash value for the node...
     public static int createHash(int pX, int pY, int pZ) {
         return pY & 0xFF | (pX & 32767) << 8 | (pZ & 32767) << 24 | (pX < 0 ? Integer.MIN_VALUE : 0) | (pZ < 0 ? 32768 : 0);
     }

@@ -1,5 +1,6 @@
 package com.github.sniffity.virgillib.navigation.pathfinder;
 
+import com.github.sniffity.virgillib.navigation.pathfinder.node.VLNode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.VisibleForDebug;

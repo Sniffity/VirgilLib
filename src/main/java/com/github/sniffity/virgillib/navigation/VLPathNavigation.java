@@ -1,7 +1,7 @@
 package com.github.sniffity.virgillib.navigation;
 
-import com.github.sniffity.virgillib.navigation.pathfinder.VLNode;
-import com.github.sniffity.virgillib.navigation.pathfinder.VLNodeEvaluator;
+import com.github.sniffity.virgillib.navigation.pathfinder.node.VLNode;
+import com.github.sniffity.virgillib.navigation.pathfinder.node.evaluator.VLNodeEvaluator;
 import com.github.sniffity.virgillib.navigation.pathfinder.VLPath;
 import com.github.sniffity.virgillib.navigation.pathfinder.VLPathFinder;
 import com.google.common.collect.ImmutableSet;
