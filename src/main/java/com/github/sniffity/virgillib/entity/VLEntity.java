@@ -5,7 +5,10 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 
 public class VLEntity extends PathfinderMob {
@@ -19,6 +22,7 @@ public class VLEntity extends PathfinderMob {
     @Override
     public void defineSynchedData(){
         this.entityData.define(TARGET_POS,new BlockPos(0,0,0));
+        super.defineSynchedData();
     }
 
     public BlockPos getTargetPos(){
@@ -27,5 +31,12 @@ public class VLEntity extends PathfinderMob {
 
     public void setTargetPos(BlockPos targetPos){
         this.entityData.set(TARGET_POS,targetPos);
+    }
+
+    public static AttributeSupplier.Builder setupEntityTypeAttributes(){
+        return LivingEntity.createLivingAttributes()
+                .add(Attributes.MAX_HEALTH,500D)
+                .add(Attributes.FOLLOW_RANGE,256)
+                .add(Attributes.MOVEMENT_SPEED,1.0D);
     }
 }
