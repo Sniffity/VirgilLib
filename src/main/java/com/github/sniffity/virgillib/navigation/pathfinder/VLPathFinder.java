@@ -53,75 +53,92 @@ public class VLPathFinder {
         //We begin by clearing everything in the node evaluator, and defining the entity's parameters
         this.nodeEvaluator.prepare(pRegion, pMob);
         //We then get the start node...
-        VLNode node = this.nodeEvaluator.getStart();
-        if (node == null) {
+        VLNode startNode = this.nodeEvaluator.getStart();
+        if (startNode == null) {
             return null;
         } else {
-            //Target BlockPos is now a Target
+            //The set of BlockPos's is mapped - each blockPos is mapped to a Target, preserving the blockPos
             Map<VLTarget, BlockPos> map = pTargetPositions.stream().collect(
                     Collectors.toMap(
-                            p_77448_ -> this.nodeEvaluator
+                            blockPosElement -> this.nodeEvaluator
                                     .getGoal(
-                                    (double)p_77448_.getX(),
-                                    (double)p_77448_.getY(),
-                                    (double)p_77448_.getZ()),
+                                    (double)blockPosElement.getX(),
+                                    (double)blockPosElement.getY(),
+                                    (double)blockPosElement.getZ()),
                             Function.identity()
                     )
             );
-            //Find Path is called with a target block position, a starter node, a target node, max rnange, accuracy and search depth multiplier
-            VLPath path = this.findPath(pRegion.getProfiler(), node, map, pMaxRange, pAccuracy, pSearchDepthMultiplier);
+            //Find Path is called with a target block position map, a starter node, a target node, max rnange, accuracy and search depth multiplier
+            VLPath path = this.findPath(pRegion.getProfiler(), startNode, map, pMaxRange, pAccuracy, pSearchDepthMultiplier);
             this.nodeEvaluator.done();
             return path;
         }
     }
 
     @Nullable
-    private VLPath findPath(ProfilerFiller pProfiler, VLNode pNode, Map<VLTarget, BlockPos> pTargetPos, float pMaxRange, int pAccuracy, float pSearchDepthMultiplier) {
+    private VLPath findPath(ProfilerFiller pProfiler, VLNode startNode, Map<VLTarget, BlockPos> targetBlockPosMap, float pMaxRange, int pAccuracy, float pSearchDepthMultiplier) {
         pProfiler.push("find_path");
         pProfiler.markForCharting(MetricCategory.PATH_FINDING);
-        Set<VLTarget> set = pTargetPos.keySet();
+        Set<VLTarget> targetSet = targetBlockPosMap.keySet();
         /**
          * The total cost of all path points up to this one. Corresponds to the A* g-score.
          */
-        //Starter node g = 0.0f;
-        pNode.g = 0.0F;
-        /**
-         * The estimated cost from this path point to the target. Corresponds to the A* h-score.
-         */
+        //A star: g(n) = cost from startNode to n
+        //Cost from start to start = 0;
+        startNode.g = 0.0F;
 
-        pNode.h = this.getBestH(pNode, set);
+        //A star: h(n) = cost from n to target
+        startNode.h = this.getBestH(startNode, targetSet);
+
+
+
         /**
          * The total cost of the path containing this path point. Used as sort criteria in PathHeap. Corresponds to the A* f-score.
          */
-        pNode.f = pNode.h;
+        //f(n) = g(n)+h(n)
+        startNode.f = startNode.h;
         this.openSet.clear();
         //Insert starter node...
-        this.openSet.insert(pNode);
+        this.openSet.insert(startNode);
         Set<Node> set1 = ImmutableSet.of();
+
+
         int i = 0;
-        Set<VLTarget> set2 = Sets.newHashSetWithExpectedSize(set.size());
-        int j = (int)((float)this.maxVisitedNodes * pSearchDepthMultiplier);
+        //create a Set with size = number of targets
+        Set<VLTarget> set2 = Sets.newHashSetWithExpectedSize(targetSet.size());
+        //maxVisitedNotes = followRange * 16
+        //multiplier = 1.0F, at the moment, nothing changes the value
+        int multipliedMaxVisitedNotes = (int)((float)this.maxVisitedNodes * pSearchDepthMultiplier);
+
 
         while(!this.openSet.isEmpty()) {
-            if (++i >= j) {
+            //If the number of nodes is too much, stop fPathFinding
+            if (++i >= multipliedMaxVisitedNotes) {
                 break;
             }
 
+            //returns the first Node in the Path...
+            //first, this will be starter node...
             VLNode node = this.openSet.pop();
+            //Closes the return node...
             node.closed = true;
-
-            for(VLTarget target : set) {
+            //For each target...
+            for(VLTarget target : targetSet) {
                 if (node.distanceManhattan(target) <= (float)pAccuracy) {
+                    //If the distance from the evaluated node to the target is less than the accuracy...
+                    //Hence, if it's close enough...
                     target.setReached();
+                    //Marked the target as reached
                     set2.add(target);
                 }
             }
-
+            //As soon as we reach one of the targets, stop PathFinding
             if (!set2.isEmpty()) {
                 break;
             }
-
-            if (!(node.distanceTo(pNode) >= pMaxRange)) {
+            //If we are still within the maxPathFindingRange
+            if (!(node.distanceTo(startNode) >= pMaxRange)) {
+                //get theNeighbors for the currently evaluated node
                 int k = this.nodeEvaluator.getNeighbors(this.neighbors, node);
 
                 for(int l = 0; l < k; ++l) {
@@ -132,7 +149,7 @@ public class VLPathFinder {
                     if (node1.walkedDistance < pMaxRange && (!node1.inOpenSet() || f1 < node1.g)) {
                         node1.cameFrom = node;
                         node1.g = f1;
-                        node1.h = this.getBestH(node1, set) * 1.5F;
+                        node1.h = this.getBestH(node1, targetSet) * 1.5F;
                         if (node1.inOpenSet()) {
                             this.openSet.changeCost(node1, node1.g + node1.h);
                         } else {
@@ -146,11 +163,11 @@ public class VLPathFinder {
 
         Optional<VLPath> optional = !set2.isEmpty() ?
                 set2.stream()
-                .map(p_77454_ -> this.reconstructPath(p_77454_.getBestNode(), pTargetPos.get(p_77454_), true))
+                .map(p_77454_ -> this.reconstructPath(p_77454_.getBestNode(), targetBlockPosMap.get(p_77454_), true))
                 .min(Comparator.comparingInt(VLPath::getNodeCount))
                 :
-                set.stream()
-                .map(p_77451_ -> this.reconstructPath(p_77451_.getBestNode(), pTargetPos.get(p_77451_), false))
+                targetSet.stream()
+                .map(p_77451_ -> this.reconstructPath(p_77451_.getBestNode(), targetBlockPosMap.get(p_77451_), false))
                 .min(Comparator.comparingDouble(VLPath::getDistToTarget).thenComparingInt(VLPath::getNodeCount));
         pProfiler.pop();
         return optional.isEmpty() ? null : optional.get();
@@ -160,15 +177,18 @@ public class VLPathFinder {
         return pFirst.distanceTo(pSecond);
     }
 
+
+    //Calculates the hValue from the Node to the Target
     private float getBestH(VLNode pNode, Set<VLTarget> pTargets) {
         float f = Float.MAX_VALUE;
-
+        //hValue is based on distance to target
+        //for each of the Targets, calculate distance to Target
+        //then, if a set, return the distance value for the Target that's the least distance to the target
         for(VLTarget target : pTargets) {
             float f1 = pNode.distanceTo(target);
             target.updateBest(f1, pNode);
             f = Math.min(f1, f);
         }
-
         return f;
     }
 

@@ -123,63 +123,76 @@ public class VLWalkNodeEvaluator extends VLNodeEvaluator {
         return blockpathtypes != BlockPathTypes.OPEN && this.mob.getPathfindingMalus(blockpathtypes) >= 0.0F;
     }
 
+    //function takes X, Y, Z coordinates, floors them, converts them into a Node and then gets a Target from it
     @Override
     public VLTarget getGoal(double pX, double pY, double pZ) {
         return this.getTargetFromNode(this.getNode(Mth.floor(pX), Mth.floor(pY), Mth.floor(pZ)));
     }
 
     @Override
-    public int getNeighbors(VLNode[] pOutputArray, VLNode pNode) {
-        int i = 0;
-        int j = 0;
-        BlockPathTypes blockpathtypes = this.getCachedBlockType(this.mob, pNode.x, pNode.y + 1, pNode.z);
-        BlockPathTypes blockpathtypes1 = this.getCachedBlockType(this.mob, pNode.x, pNode.y, pNode.z);
-        if (this.mob.getPathfindingMalus(blockpathtypes) >= 0.0F && blockpathtypes1 != BlockPathTypes.STICKY_HONEY) {
-            j = Mth.floor(Math.max(1.0F, this.mob.getStepHeight()));
+    public int getNeighbors(VLNode[] pOutputArray, VLNode nodeToEvaluate) {
+        int numberOfValidNeighbors = 0;
+        int mobStepUpHeight = 0;
+        //get the blockPathType for the node position and above the node position
+        //this value is cached, hence it might already exist
+        //if it doesn't we create it...
+        BlockPathTypes blockPathTypeAboveNode = this.getCachedBlockType(this.mob, nodeToEvaluate.x, nodeToEvaluate.y + 1, nodeToEvaluate.z);
+        BlockPathTypes blockPathTypeNode = this.getCachedBlockType(this.mob, nodeToEvaluate.x, nodeToEvaluate.y, nodeToEvaluate.z);
+
+        //set the stepHeight for the mob...
+        //a minimum of 1 is used for all step heights...
+        //mobs cannot step ON TOP of honey
+        //mobs can only step up if block they're stepping up INTO is accepted by the Malus
+        if (this.mob.getPathfindingMalus(blockPathTypeAboveNode) >= 0.0F && blockPathTypeNode != BlockPathTypes.STICKY_HONEY) {
+            mobStepUpHeight = Mth.floor(Math.max(1.0F, this.mob.getStepHeight()));
         }
 
-        double d0 = this.getFloorLevel(new BlockPos(pNode.x, pNode.y, pNode.z));
-        VLNode node = this.findAcceptedNode(pNode.x, pNode.y, pNode.z + 1, j, d0, Direction.SOUTH, blockpathtypes1);
-        if (this.isNeighborValid(node, pNode)) {
-            pOutputArray[i++] = node;
+        //get the FloorPosition
+        double nodeFloorLevel = this.getFloorLevel(new BlockPos(nodeToEvaluate.x, nodeToEvaluate.y, nodeToEvaluate.z));
+
+        //Now we begin evaluating the neighboring nodes for the currently evaluated nodes
+        //We add each valid neighbor to the outPut Array and increase the number of elements in the array by 1
+        //Of note, the neighboring noes are all on the same y level as the currently evaluated node
+        VLNode nodeSouth = this.findAcceptedNode(nodeToEvaluate.x, nodeToEvaluate.y, nodeToEvaluate.z + 1, mobStepUpHeight, nodeFloorLevel, Direction.SOUTH, blockPathTypeNode);
+        if (this.isNeighborValid(nodeSouth, nodeToEvaluate)) {
+            pOutputArray[numberOfValidNeighbors++] = nodeSouth;
         }
 
-        VLNode node1 = this.findAcceptedNode(pNode.x - 1, pNode.y, pNode.z, j, d0, Direction.WEST, blockpathtypes1);
-        if (this.isNeighborValid(node1, pNode)) {
-            pOutputArray[i++] = node1;
+        VLNode nodeWest = this.findAcceptedNode(nodeToEvaluate.x - 1, nodeToEvaluate.y, nodeToEvaluate.z, mobStepUpHeight, nodeFloorLevel, Direction.WEST, blockPathTypeNode);
+        if (this.isNeighborValid(nodeWest, nodeToEvaluate)) {
+            pOutputArray[numberOfValidNeighbors++] = nodeWest;
         }
 
-        VLNode node2 = this.findAcceptedNode(pNode.x + 1, pNode.y, pNode.z, j, d0, Direction.EAST, blockpathtypes1);
-        if (this.isNeighborValid(node2, pNode)) {
-            pOutputArray[i++] = node2;
+        VLNode nodeEast = this.findAcceptedNode(nodeToEvaluate.x + 1, nodeToEvaluate.y, nodeToEvaluate.z, mobStepUpHeight, nodeFloorLevel, Direction.EAST, blockPathTypeNode);
+        if (this.isNeighborValid(nodeEast, nodeToEvaluate)) {
+            pOutputArray[numberOfValidNeighbors++] = nodeEast;
         }
 
-        VLNode node3 = this.findAcceptedNode(pNode.x, pNode.y, pNode.z - 1, j, d0, Direction.NORTH, blockpathtypes1);
-        if (this.isNeighborValid(node3, pNode)) {
-            pOutputArray[i++] = node3;
+        VLNode nodeNorth = this.findAcceptedNode(nodeToEvaluate.x, nodeToEvaluate.y, nodeToEvaluate.z - 1, mobStepUpHeight, nodeFloorLevel, Direction.NORTH, blockPathTypeNode);
+        if (this.isNeighborValid(nodeNorth, nodeToEvaluate)) {
+            pOutputArray[numberOfValidNeighbors++] = nodeNorth;
         }
 
-        VLNode node4 = this.findAcceptedNode(pNode.x - 1, pNode.y, pNode.z - 1, j, d0, Direction.NORTH, blockpathtypes1);
-        if (this.isDiagonalValid(pNode, node1, node3, node4)) {
-            pOutputArray[i++] = node4;
+        VLNode nodeNorthWest = this.findAcceptedNode(nodeToEvaluate.x - 1, nodeToEvaluate.y, nodeToEvaluate.z - 1, mobStepUpHeight, nodeFloorLevel, Direction.NORTH, blockPathTypeNode);
+        if (this.isDiagonalValid(nodeToEvaluate, nodeWest, nodeNorth, nodeNorthWest)) {
+            pOutputArray[numberOfValidNeighbors++] = nodeNorthWest;
         }
 
-        VLNode node5 = this.findAcceptedNode(pNode.x + 1, pNode.y, pNode.z - 1, j, d0, Direction.NORTH, blockpathtypes1);
-        if (this.isDiagonalValid(pNode, node2, node3, node5)) {
-            pOutputArray[i++] = node5;
+        VLNode nodeNorthEast = this.findAcceptedNode(nodeToEvaluate.x + 1, nodeToEvaluate.y, nodeToEvaluate.z - 1, mobStepUpHeight, nodeFloorLevel, Direction.NORTH, blockPathTypeNode);
+        if (this.isDiagonalValid(nodeToEvaluate, nodeEast, nodeNorth, nodeNorthEast)) {
+            pOutputArray[numberOfValidNeighbors++] = nodeNorthEast;
         }
 
-        VLNode node6 = this.findAcceptedNode(pNode.x - 1, pNode.y, pNode.z + 1, j, d0, Direction.SOUTH, blockpathtypes1);
-        if (this.isDiagonalValid(pNode, node1, node, node6)) {
-            pOutputArray[i++] = node6;
+        VLNode nodeSouthWest = this.findAcceptedNode(nodeToEvaluate.x - 1, nodeToEvaluate.y, nodeToEvaluate.z + 1, mobStepUpHeight, nodeFloorLevel, Direction.SOUTH, blockPathTypeNode);
+        if (this.isDiagonalValid(nodeToEvaluate, nodeWest, nodeSouth, nodeSouthWest)) {
+            pOutputArray[numberOfValidNeighbors++] = nodeSouthWest;
         }
 
-        VLNode node7 = this.findAcceptedNode(pNode.x + 1, pNode.y, pNode.z + 1, j, d0, Direction.SOUTH, blockpathtypes1);
-        if (this.isDiagonalValid(pNode, node2, node, node7)) {
-            pOutputArray[i++] = node7;
+        VLNode nodeSouthEast = this.findAcceptedNode(nodeToEvaluate.x + 1, nodeToEvaluate.y, nodeToEvaluate.z + 1, mobStepUpHeight, nodeFloorLevel, Direction.SOUTH, blockPathTypeNode);
+        if (this.isDiagonalValid(nodeToEvaluate, nodeEast, nodeSouth, nodeSouthEast)) {
+            pOutputArray[numberOfValidNeighbors++] = nodeSouthEast;
         }
-
-        return i;
+        return numberOfValidNeighbors;
     }
 
     protected boolean isNeighborValid(@Nullable VLNode pNeighbor, VLNode pNode) {
@@ -230,6 +243,8 @@ public class VLWalkNodeEvaluator extends VLNodeEvaluator {
     }
 
     protected double getFloorLevel(BlockPos pPos) {
+        //the FloorLevel for the BlockPos (Node) is either Y+0.5 in water
+        // Or, Y+ the block height of the block below for solid blocks
         return (this.canFloat() || this.isAmphibious()) && this.level.getFluidState(pPos).is(FluidTags.WATER)
                 ? (double)pPos.getY() + 0.5
                 : getFloorLevel(this.level, pPos);
@@ -248,18 +263,29 @@ public class VLWalkNodeEvaluator extends VLNodeEvaluator {
     @Nullable
     protected VLNode findAcceptedNode(int pX, int pY, int pZ, int pVerticalDeltaLimit, double pNodeFloorLevel, Direction pDirection, BlockPathTypes pPathType) {
         VLNode node = null;
+        //Define a mutable BlockPos
         BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
+
+        //set the BlockPos mutable to the 's blockPos and get its floor level
         double d0 = this.getFloorLevel(blockpos$mutableblockpos.set(pX, pY, pZ));
+        //Ensure the mob can step up into the node, based on its jump height
+        //The neighboring node's height shouldn't be greater than the mob's step up height
         if (d0 - pNodeFloorLevel > this.getMobJumpHeight()) {
             return null;
         } else {
+            //get the BlockPathType for the node being evaluated...
+            //if it already exists, retrieve value, else, create value
             BlockPathTypes blockpathtypes = this.getCachedBlockType(this.mob, pX, pY, pZ);
-            float f = this.mob.getPathfindingMalus(blockpathtypes);
+            float nodeMalus = this.mob.getPathfindingMalus(blockpathtypes);
             double d1 = (double)this.mob.getBbWidth() / 2.0;
-            if (f >= 0.0F) {
-                node = this.getNodeAndUpdateCostToMax(pX, pY, pZ, blockpathtypes, f);
+
+            //If the block is pathFindable, update its cost BlockPathType and its malus...
+            if (nodeMalus >= 0.0F) {
+                node = this.getNodeAndUpdateCostToMax(pX, pY, pZ, blockpathtypes, nodeMalus);
             }
 
+            //ToDo: We are here
+            //null the node if...
             if (doesBlockHavePartialCollision(pPathType) && node != null && node.costMalus >= 0.0F && !this.canReachWithoutCollision(node)) {
                 node = null;
             }
@@ -320,13 +346,13 @@ public class VLWalkNodeEvaluator extends VLNodeEvaluator {
                         }
 
                         blockpathtypes = this.getCachedBlockType(this.mob, pX, pY, pZ);
-                        f = this.mob.getPathfindingMalus(blockpathtypes);
-                        if (blockpathtypes != BlockPathTypes.OPEN && f >= 0.0F) {
-                            node = this.getNodeAndUpdateCostToMax(pX, pY, pZ, blockpathtypes, f);
+                        nodeMalus = this.mob.getPathfindingMalus(blockpathtypes);
+                        if (blockpathtypes != BlockPathTypes.OPEN && nodeMalus >= 0.0F) {
+                            node = this.getNodeAndUpdateCostToMax(pX, pY, pZ, blockpathtypes, nodeMalus);
                             break;
                         }
 
-                        if (f < 0.0F) {
+                        if (nodeMalus < 0.0F) {
                             return this.getBlockedNode(pX, pY, pZ);
                         }
                     }
@@ -448,10 +474,13 @@ public class VLWalkNodeEvaluator extends VLNodeEvaluator {
     /**
      * Returns a cached path node type for specified position or calculates it
      */
+    //Attempt to get a cachedBlockPathType for the position
+    //If none exists, create one
     protected BlockPathTypes getCachedBlockType(Mob pEntity, int pX, int pY, int pZ) {
         return this.pathTypesByPosCache
                 .computeIfAbsent(
-                        BlockPos.asLong(pX, pY, pZ), p_265015_ -> this.getBlockPathType(this.level, pX, pY, pZ, pEntity)
+                        BlockPos.asLong(pX, pY, pZ),
+                        blockPosLongKey -> this.getBlockPathType(this.level, pX, pY, pZ, pEntity)
                 );
     }
 

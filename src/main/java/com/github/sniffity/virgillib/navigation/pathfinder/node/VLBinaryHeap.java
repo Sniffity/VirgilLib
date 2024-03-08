@@ -1,7 +1,5 @@
 package com.github.sniffity.virgillib.navigation.pathfinder.node;
 
-import net.minecraft.world.level.pathfinder.Node;
-
 import java.util.Arrays;
 
 public class VLBinaryHeap {
@@ -54,7 +52,7 @@ public class VLBinaryHeap {
         return node;
     }
 
-    public void remove(Node pNode) {
+    public void remove(VLNode pNode) {
         this.heap[pNode.heapIdx] = this.heap[--this.size];
         this.heap[this.size] = null;
         if (this.size > pNode.heapIdx) {

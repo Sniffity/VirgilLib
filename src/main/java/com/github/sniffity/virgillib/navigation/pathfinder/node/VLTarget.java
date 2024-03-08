@@ -4,7 +4,7 @@ package com.github.sniffity.virgillib.navigation.pathfinder.node;
 import net.minecraft.network.FriendlyByteBuf;
 
 public class VLTarget extends VLNode {
-    private float bestHeuristic = Float.MAX_VALUE;
+    private float besthValue = Float.MAX_VALUE;
     /**
      * The nearest path point of the path that is constructed
      */
@@ -19,9 +19,9 @@ public class VLTarget extends VLNode {
         super(pX, pY, pZ);
     }
 
-    public void updateBest(float pHeuristic, VLNode pNode) {
-        if (pHeuristic < this.bestHeuristic) {
-            this.bestHeuristic = pHeuristic;
+    public void updateBest(float hValue, VLNode pNode) {
+        if (hValue < this.besthValue) {
+            this.besthValue = hValue;
             this.bestNode = pNode;
         }
     }

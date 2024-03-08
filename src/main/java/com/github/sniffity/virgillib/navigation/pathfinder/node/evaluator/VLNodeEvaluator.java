@@ -14,6 +14,8 @@ import net.minecraft.world.level.pathfinder.BlockPathTypes;
 public abstract class VLNodeEvaluator {
     protected VLPathNavigationRegion level;
     protected Mob mob;
+
+    //Map: each Node is mapped to an Integer (hash)
     protected final Int2ObjectMap<VLNode> nodes = new Int2ObjectOpenHashMap<>();
     protected int entityWidth;
     protected int entityHeight;
@@ -40,16 +42,19 @@ public abstract class VLNodeEvaluator {
         this.mob = null;
     }
 
+
+    //gets a Node, from a map of Nodes and Hashes, by the XYZ coordinates
+    // meaning, it gets the Node matching the XYZ coordinates or creates a new Node if it doesn't exist yet
+    protected VLNode getNode(int pX, int pY, int pZ) {
+        return this.nodes.computeIfAbsent(VLNode.createHash(pX, pY, pZ), hashValue -> new VLNode(pX, pY, pZ));
+    }
+
+    //gets a Node, from a map of Nodes and Hashes, by the BlockPos
     protected VLNode getNode(BlockPos pPos) {
         return this.getNode(pPos.getX(), pPos.getY(), pPos.getZ());
     }
 
-    /**
-     * Returns a mapped point or creates and adds one
-     */
-    protected VLNode getNode(int pX, int pY, int pZ) {
-        return this.nodes.computeIfAbsent(VLNode.createHash(pX, pY, pZ), p_77332_ -> new VLNode(pX, pY, pZ));
-    }
+
 
     public abstract VLNode getStart();
 

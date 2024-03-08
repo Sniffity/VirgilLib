@@ -204,7 +204,7 @@ public abstract class VLPathNavigation {
             //ToDo: Investigate further in PathNavigationRegion
             VLPathNavigationRegion pathnavigationregion = new VLPathNavigationRegion(this.level, blockpos.offset(-i, -i, -i), blockpos.offset(i, i, i));
             //Finally, we call findPath, which actually constructs the Path
-            //Of note, findPath is called ona previously initialized PathFinder instance for this mob
+            //Of note, findPath is called on a previously initialized PathFinder instance for this mob
             VLPath path = this.pathFinder.findPath(pathnavigationregion, this.mob, pTargets, pFollowRange, pAccuracy, this.maxVisitedNodesMultiplier);
             this.level.getProfiler().pop();
             if (path != null && path.getTarget() != null) {
