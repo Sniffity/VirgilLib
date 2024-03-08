@@ -15,6 +15,7 @@ public class VirgilLib
     public static final String MODID = "virgillib";
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    //ToDo: Caching
     public VirgilLib(IEventBus modEventBus)
     {
         modEventBus.addListener(this::commonSetup);
