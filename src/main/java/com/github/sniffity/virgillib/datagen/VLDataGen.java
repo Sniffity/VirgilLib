@@ -18,5 +18,11 @@ public class VLDataGen {
                 event.includeClient(),
                 output -> new VLBlockStateProvider(output, efh)
         );
+
+
+        generator.<VLItemModelProvider>addProvider(
+                event.includeClient(),
+                output -> new VLItemModelProvider(output, efh)
+        );
     }
 }
