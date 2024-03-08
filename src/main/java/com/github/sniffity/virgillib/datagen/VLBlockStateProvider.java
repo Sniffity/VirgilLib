@@ -8,8 +8,8 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 public class VLBlockStateProvider extends BlockStateProvider {
 
-    public VLBlockStateProvider(PackOutput output, ExistingFileHelper exFileHelper) {
-        super(output, VirgilLib.MODID, exFileHelper);
+    public VLBlockStateProvider(PackOutput output, ExistingFileHelper existingFileHelper) {
+        super(output, VirgilLib.MODID, existingFileHelper);
     }
 
     @Override

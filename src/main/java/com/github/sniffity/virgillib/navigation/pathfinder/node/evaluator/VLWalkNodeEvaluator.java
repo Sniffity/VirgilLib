@@ -285,11 +285,16 @@ public class VLWalkNodeEvaluator extends VLNodeEvaluator {
             }
 
             //ToDo: We are here
+            //ToDo: We are here
+            //ToDo: We are here
+            //ToDo: We are here
+            //ToDo: We are here
             //null the node if...
             if (doesBlockHavePartialCollision(pPathType) && node != null && node.costMalus >= 0.0F && !this.canReachWithoutCollision(node)) {
                 node = null;
             }
 
+            
             if (blockpathtypes != BlockPathTypes.WALKABLE && (!this.isAmphibious() || blockpathtypes != BlockPathTypes.WATER)) {
                 if ((node == null || node.costMalus < 0.0F)
                         && pVerticalDeltaLimit > 0
@@ -395,6 +400,7 @@ public class VLWalkNodeEvaluator extends VLNodeEvaluator {
     }
 
     @Override
+    //ToDo: further evaluate here!!!!!!
     public BlockPathTypes getBlockPathType(BlockGetter pLevel, int pX, int pY, int pZ, Mob pMob) {
         EnumSet<BlockPathTypes> enumset = EnumSet.noneOf(BlockPathTypes.class);
         BlockPathTypes blockpathtypes = BlockPathTypes.BLOCKED;
